@@ -15,7 +15,10 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -98,6 +101,20 @@ public class XuiteController extends GgXuiteAbstractController {
 		return new ModelAndView("xuite");
 	}
 
+	@RequestMapping("/getoauth")
+	public ModelAndView getOauth(
+			@RequestParam("access_token") String access_token,
+			HttpServletRequest request, HttpServletResponse response) {
+		// for (Iterator<Entry> iter = request.getParameterMap().entrySet()
+		// .iterator(); iter.hasNext();) {
+		// Entry entry = iter.next();
+		// log.info(entry.getKey() + ":" + entry.getValue());
+		// }
+		log.info("access_token:" + access_token);
+
+		return new ModelAndView("xuite", "oAuth", access_token);
+	}
+
 	protected String processIdUrl(XuiteUtil xUtil, String url,
 			List<XuiteFile> fileList) {
 		StringBuffer sb = new StringBuffer();
@@ -108,7 +125,7 @@ public class XuiteController extends GgXuiteAbstractController {
 			String shortener = xUtil.getShortener(u);
 			log.info(u + "~" + shortener);
 			sb.append(shortener).append("|").append(f.getName())
-					.append("<br/>");
+					.append(System.getProperty("line.separator"));
 		}
 		return sb.toString();
 	}

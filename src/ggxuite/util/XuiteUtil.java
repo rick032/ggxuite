@@ -18,7 +18,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,24 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
-import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -196,7 +180,7 @@ public class XuiteUtil {
 		URL url = new URL(urlStr);
 		log.info(urlStr);
 		String line;
-		sslConn(url);
+		urlConn(url, null);
 		StringBuffer sb = new StringBuffer();
 		while ((line = rd.readLine()) != null) {
 			sb.append(line);
@@ -258,7 +242,7 @@ public class XuiteUtil {
 		line = line.substring(line.indexOf(locationPrefix),
 				line.lastIndexOf(");") - 1);
 		URL url = new URL(line.substring(line.indexOf("http")));
-		sslConn(url);
+		urlConn(url, null);
 		StringBuffer sb = new StringBuffer();
 
 		while ((line = rd.readLine()) != null) {
@@ -334,57 +318,6 @@ public class XuiteUtil {
 		}
 
 		return result.toString();
-	}
-
-	private void sslConn(URL url) throws ClientProtocolException,
-			URISyntaxException, IOException {
-		sslConn(url, null);
-	}
-
-	private void sslConn(URL url, Map<String, String> params)
-			throws URISyntaxException, ClientProtocolException, IOException {
-		if (params != null) {
-			List<NameValuePair> pa = new ArrayList<NameValuePair>();
-			if (params != null) {
-				for (Map.Entry<String, String> entry : params.entrySet()) {
-					pa.add(new BasicNameValuePair(entry.getKey(), entry
-							.getValue()));
-				}
-			}
-			wr.write(getQuery(pa));
-		}
-
-		// Get the response
-		isr = new InputStreamReader(url.openStream());
-		rd = new BufferedReader(isr);
-	}
-
-	@SuppressWarnings("deprecation")
-	public HttpClient getNewHttpClient() {
-		try {
-			KeyStore trustStore = KeyStore.getInstance(KeyStore
-					.getDefaultType());
-			trustStore.load(null, null);
-
-			SSLSocketFactory sf = new MySSLSocketFactory(trustStore);
-			sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-
-			HttpParams params = new BasicHttpParams();
-			HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-			HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
-
-			SchemeRegistry registry = new SchemeRegistry();
-			registry.register(new Scheme("http", PlainSocketFactory
-					.getSocketFactory(), 80));
-			registry.register(new Scheme("https", sf, 443));
-
-			ClientConnectionManager ccm = new ThreadSafeClientConnManager(
-					params, registry);
-
-			return new DefaultHttpClient(ccm, params);
-		} catch (Exception e) {
-			return new DefaultHttpClient();
-		}
 	}
 
 	public String getMD5(String... param) {
