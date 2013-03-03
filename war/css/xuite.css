@@ -1,0 +1,15 @@
+address {
+	font-style: italic;
+	display: block;
+}
+.msg {
+	font: italic normal 23px/26px "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif;
+	color: #1a1a1a;
+	margin-left: 0;
+	margin-bottom: 0;
+	padding: 20px 30px;
+	position: relative;
+	text-shadow: 0 1px 0 #ffffff;
+	background-color: #f2f2f2;
+	width: 40%;
+}

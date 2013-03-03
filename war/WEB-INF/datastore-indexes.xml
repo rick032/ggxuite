@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<datastore-indexes
+  autoGenerate="true"><!--  
+    <datastore-index kind="XuiteUser" ancestor="false">
+        <property name="apiKey" direction="asc" />
+    </datastore-index> 
+
+    <datastore-index kind="XuiteFile" ancestor="false">
+        <property name="xkey" direction="asc" />
+    </datastore-index>-->
+</datastore-indexes>
