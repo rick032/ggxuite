@@ -3,79 +3,18 @@
 <html>
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		
 		<meta http-equiv="content-language" content="zh-tw">
-		<title>Xuite To SMG By Rick032!</title>
-		<link href="../css/south-street/jquery-ui-1.10.1.custom.css" rel="stylesheet">
-		<script src="../js/jquery-1.9.1.js"></script>
-		<script src="../js/jquery-ui-1.10.1.custom.js"></script>
-		<style type="text/css" media="screen">
-			address {
-				font-style: italic;
-				display: block;
-			}
-			.msg {
-				font: italic normal 23px/26px "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif;
-				color: #1a1a1a;
-				margin-left: 0;
-				margin-bottom: 0;
-				padding: 20px 30px;
-				position: relative;
-				text-shadow: 0 1px 0 #ffffff;
-				background-color: #f2f2f2;
-				width: 40%;
-			}
-		</style>
-	</head>
-	<script>
-		$(document).ready(function() {
-			var apiKey = $("#apiKey"), secretKey = $("#secretKey"), oAuth = $("#oAuth"), form = $('#form1'), message = $("#message");
-
-			$("#sendToOauth").click(function() {
-				if (apiKey.val()) {
-					form.attr("action", "http://my.xuite.net/service/account/authorize.php?response_type=token&client_id=" + apiKey.val() + "&redirect_uri=http://ggxuite.appspot.com/xuite/getoauth&scope=read write&state=&invoke_call=")
-					form.submit();
-				} else {
-					alert("Please input API-KEY");
-				}
-			})
-			$("#send").click(function() {
-				if (apiKey.val() && secretKey.val() && oAuth.val()) {
-
-					message.animate({
-						opacity : 0.25,
-						left : '50',
-						height : '20'
-					}, 1000, function() {
-						$(this).text("It's getting File list.Please wait");
-						$.ajax({
-							type : "GET",
-							url : "../xuite/add",
-							data : {
-								apiKey : apiKey.val(),
-								secretKey : secretKey.val(),
-								oAuth : oAuth.val()
-							},
-							success : function(msg) {
-								$("#content").val(msg);
-								$("#message").text('');
-							},
-							error : function(msg) {
-								alert(msg);
-							}
-						});
-					});
-
-				} else {
-					alert("Please input all columns.");
-				}
-			})
-		});
-	</script>
+		<title>Xuite To SMG By Rick032!</title>		
+		<script src="../js/jquery-1.9.1.min.js"></script>	
+		<link rel="stylesheet" href="../css/xuite.css">
+		<script src="../js/xuite.js" ></script>
+	</head>	
 	<body>
 		<table style="position:relative;text-align: left; width: 946px; height: 32px;" border="0" cellpadding="0" cellspacing="0">
 			<tbody>
 				<tr>
-					<td style="width: 250px; text-align: center; vertical-align: top;float: left;"></td>
+					<td style="width: 250px; text-align: center; vertical-align: top;float: left;"> </td>
 					<td style="vertical-align: top; width: 690px; text-align: left;float: right;"><h1>Xuite To SMG By Rick032!</h1>
 					<form id="form1" target="_blank" method="post">
 						<div>
@@ -89,7 +28,7 @@
 								<tr>
 									<td style="font-weight: bold;"><label for="API-KEY">API-KEY:</label></td>
 									<td>
-									<input type="text" id="apiKey" name="apiKey" value=""/>
+									<input type="text" id="apiKey" name="apiKey" value=""/><input type="button" id="getOldFileList" name="getOldFileList" value="Get old File List"/>
 									</td>
 								</tr>
 								<tr>
@@ -102,9 +41,8 @@
 									<td style="font-weight: bold;"><label for="oAuth">oAuth:</label></td>
 									<td>
 									<input type="text" id="oAuth" name="oAuth" value="${oAuth}"/>
-									<button id="sendToOauth" name="sendToOauth">
-										Get oAuth
-									</button></td>
+									<input type="button" id="sendToOauth" name="sendToOauth" value="Get oAuth"/>
+									</td>
 								</tr>
 								<tr>
 									<td colspan="2">

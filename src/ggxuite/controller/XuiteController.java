@@ -1,4 +1,4 @@
-/**
+/** 
  * 
  */
 package ggxuite.controller;
@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,25 +59,59 @@ public class XuiteController extends GgXuiteAbstractController {
 			@RequestParam("secretKey") String secretKey,
 			@RequestParam("oAuth") String oAuth, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-		XuiteUser xuite = new XuiteUser(apiKey, secretKey, oAuth);
-		// xuiteService.save(xuite);
-		log.info(oAuth);
+		XuiteUser xuite = null;
+		List<XuiteFile> fileList = null;
+		List<XuiteFile> oldFileList = null;
+		List<String> fileKeyList = new ArrayList<String>();
+		XuiteUser u = userService.findByApiKey(apiKey);
+		if (u != null) {
+			xuite = u;
+			xuite.setSecretKey(secretKey);
+			xuite.setoAuth(oAuth);
+			xuite.setSourceIP(request.getRemoteHost());
+			xuite.setLastUpdate(new Date(System.currentTimeMillis()));
+			oldFileList = xuite.getFiles();
+			for (XuiteFile f : oldFileList) {
+				fileKeyList.add(f.getXkey());
+			}
+		} else {
+			xuite = new XuiteUser(apiKey, secretKey, oAuth,
+					request.getRemoteHost());
+		}
+		if (fileList == null) {
+			fileList = new ArrayList<XuiteFile>();
+		}
+		log.info("IP:" + xuite.getSourceIP());
 		XuiteUtil xUtil = new XuiteUtil(xuite);
-		// String oAuth = xUtil.getAuth();
-		// xuite.setauth(oAuth);
 
 		JSONArray jsonArray = xUtil.getList();
 		if (jsonArray.length() == 2 && "1001010003".equals(jsonArray.get(0))) {
+			log.info("1001010003:" + jsonArray.getString(1));
 			jsonArray = xUtil.getList();
 		}
-		List<XuiteFile> fileList = new ArrayList<XuiteFile>();
+		if (jsonArray.length() == 2) {
+			String msg = jsonArray.getString(1);
+			log.info("ERROR MSG:" + msg);
+			response.getWriter().print(msg);
+			xUtil.close();
+			return;
+		}
 		for (int i = 0; i < jsonArray.length(); i++) {
 			JSONObject j = jsonArray.getJSONObject(i);
-			XuiteFile xFile = new XuiteFile(j.getString("key"),
-					j.getString("parent"), j.getString("path"),
-					j.getString("name"), new BigInteger(j.getString("size")),
-					new Timestamp(j.getLong("mtime")), xuite);
-			log.info(j.getString("key"));
+			XuiteFile xFile = null;
+			String xKey = j.getString("key");
+			if (fileKeyList.contains(xKey)) {
+				// file exist
+				xFile = oldFileList.get(fileKeyList.indexOf(xKey));
+				log.info("file exist:" + xKey);
+			} else {
+				// new
+				xFile = new XuiteFile(xKey, j.getString("parent"),
+						j.getString("path"), j.getString("name"),
+						new BigInteger(j.getString("size")), new Timestamp(
+								j.getLong("mtime")), xuite);
+				log.info("file new:" + xKey);
+			}
 			fileList.add(xFile);
 		}
 		xuite.setFiles(fileList);
@@ -102,14 +137,33 @@ public class XuiteController extends GgXuiteAbstractController {
 	public ModelAndView getOauth(
 			@RequestParam("access_token") String access_token,
 			HttpServletRequest request, HttpServletResponse response) {
-		// for (Iterator<Entry> iter = request.getParameterMap().entrySet()
-		// .iterator(); iter.hasNext();) {
-		// Entry entry = iter.next();
-		// log.info(entry.getKey() + ":" + entry.getValue());
-		// }
 		log.info("access_token:" + access_token);
-
 		return new ModelAndView("xuite", "oAuth", access_token);
+	}
+
+	@RequestMapping(value = "/getoldfile", method = RequestMethod.GET)
+	public void getOldFile(@RequestParam("apiKey") String apiKey,
+			HttpServletRequest request, HttpServletResponse response)
+			throws IOException, JSONException {
+		XuiteUser oldUser = userService.findByApiKey(apiKey);
+		JSONObject json = new JSONObject();
+		if (oldUser != null) {
+			XuiteUtil xUtil = new XuiteUtil(oldUser);
+			json.put("secretKey", oldUser.getSecretKey());
+			json.put("oAuth", oldUser.getoAuth());
+			json.put(
+					"content",
+					new StringBuffer(processIdUrl(xUtil, request
+							.getRequestURL().toString(), oldUser.getFiles()))
+							.toString());
+			xUtil.close();
+		} else {
+			json.put("msg", "This API-Key not found!");
+		}
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("text/html");
+		response.getWriter().print(json.toString());
+
 	}
 
 	protected String processIdUrl(XuiteUtil xUtil, String url,
@@ -127,6 +181,7 @@ public class XuiteController extends GgXuiteAbstractController {
 		return sb.toString();
 	}
 
+	@SuppressWarnings("static-access")
 	@RequestMapping(value = "/geturl/{id}", method = RequestMethod.GET)
 	public void getUrl(@PathVariable String id, HttpServletRequest request,
 			HttpServletResponse response) {

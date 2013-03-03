@@ -16,12 +16,10 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -32,10 +30,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 /**
  * @author Rick
@@ -52,37 +46,9 @@ public class XuiteUtil {
 	private OutputStreamWriter wr;
 	private BufferedReader rd;
 	private StringReader sr;
-	private String locationPrefix = "location.replace";
-	private String locationEndfix = "\");";
-	private String CHECKCOOKIE = "checkcookieservlet";
-	private String AUTH_URL = "http://my.xuite.net/service/account/authorize.php?response_type=code&client_id=";
 	private String apiKey;
 	private String secretKey;
 	private String auth;
-
-	public static void main(String[] args) throws ClientProtocolException,
-			URISyntaxException, IOException, JSONException {
-		XuiteUtil x = new XuiteUtil("207aadf5f03e3e5f232094e2b00664bd",
-				"6339926682");
-
-		String auth = "XOAddaa39c576d0bf891dd1ccfdae8fb66a";
-		JSONArray jsonArray = x.getList();
-
-		for (int i = 0; i < jsonArray.length(); i++) {
-			JSONObject j = jsonArray.getJSONObject(i);
-			String key = j.getString("key");
-			String parent = j.getString("parent");
-			log.info(x.getDirectURL(key, parent));
-		}
-		// x.getauth("207aadf5f03e3e5f232094e2b00664bd");
-		// log.info(x.getMD5("6339926682",
-		// "207aadf5f03e3e5f232094e2b00664bd",
-		// "xuite.webhd.prepare.cloudbox.getFile", "2222222222222"));
-		//
-		// log.info(x.getMD5("7974750595",
-		// "beebcb69941a1dbd3d8f97b20aab99fe",
-		// "xuite.photo.public.aaaaaa", "2222222222222"));
-	}
 
 	public XuiteUtil(String apiKey, String secretKey) {
 		this.apiKey = apiKey;
@@ -121,54 +87,6 @@ public class XuiteUtil {
 				"file") : json.getJSONArray("msg");
 	}
 
-	public String getToken(String apiKey, String secretKey) {
-		try {
-
-			URL url = new URL(
-					AUTH_URL
-							+ apiKey
-							+ "&client_secret="
-							+ secretKey
-							+ "&redirect_uri=127.0.0.1&scope=read write&state=&invoke_call=myObject");
-			urlConn(url, null);
-			String result = "";
-			String line;
-			String prefix = "<img id=\"auth-confirm-app-logo\" src=\"";
-			String endfix = " call=myObject";
-
-			while ((line = rd.readLine()) != null) {
-				if (line.indexOf(locationPrefix) > 0) {
-					result = reDirection(line);
-					break;
-				}
-				int index = line.indexOf(prefix);
-				if (index > -1) {
-					rd.close();
-					conn.disconnect();
-					result = line.substring(index + prefix.length(),
-							line.indexOf(endfix) + endfix.length());
-				}
-			}
-			JSONObject json = new JSONObject(result);
-
-			return (String) json.get("id");
-		} catch (Exception e) {
-			log.info(e.getMessage());
-		} finally {
-			try {
-				wr.close();
-				rd.close();
-				isr.close();
-				conn.disconnect();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		}
-		return null;
-	}
-
 	public String getDirectURL(String key, String parent)
 			throws ClientProtocolException, URISyntaxException, IOException,
 			JSONException {
@@ -188,92 +106,6 @@ public class XuiteUtil {
 		JSONObject json = new JSONObject(sb.toString());
 		return json.getBoolean("ok") ? json.getJSONObject("rsp").getString(
 				"url2") : "Fail!!";
-	}
-
-	public String getAuth() {
-		try {
-
-			URL url = new URL(
-					AUTH_URL
-							+ apiKey
-							+ "&redirect_uri=tw.yahoo.com&scope=read&state=&invoke_call=myObject");
-
-			String result = "";
-			String line;
-			String prefix = "<img id=\"auth-confirm-app-logo\" src=\"";
-			String endfix = " call=myObject";
-
-			while ((line = rd.readLine()) != null) {
-				log.info(line);
-				if (line.indexOf(locationPrefix) > 0) {
-					result = reDirection(line);
-					break;
-				}
-				int index = line.indexOf(prefix);
-				if (index > -1) {
-					rd.close();
-					conn.disconnect();
-					result = line.substring(index + prefix.length(),
-							line.indexOf(endfix) + endfix.length());
-				}
-			}
-			JSONObject json = new JSONObject(result);
-
-			return (String) json.get("id");
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				wr.close();
-				rd.close();
-				is.close();
-				conn.disconnect();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-		}
-		return null;
-	}
-
-	private String reDirection(String line) throws Exception,
-			UnsupportedEncodingException {
-		line = URLDecoder.decode(line, "UTF-8");
-		line = line.substring(line.indexOf(locationPrefix),
-				line.lastIndexOf(");") - 1);
-		URL url = new URL(line.substring(line.indexOf("http")));
-		urlConn(url, null);
-		StringBuffer sb = new StringBuffer();
-
-		while ((line = rd.readLine()) != null) {
-			if (line.indexOf(locationPrefix) > 0) {
-				return reDirection(line);
-			}
-			sb.append(line);
-		}
-
-		Document doc = Jsoup.parse(sb.toString());
-		Elements formEl = doc.select("form");
-
-		url = new URL(formEl.attr("action"));
-
-		List<Element> list = doc.select("input");
-		Map<String, String> params = new HashMap<String, String>();
-		for (Element el : list) {
-			String id = el.attr("id");
-			String value = el.attr("value");
-			if ("uid".equals(id)) {
-				value = "ggxuite";
-			} else if ("pw".equals(id)) {
-				value = "MhGtEgwVz8h5";
-			}
-			params.put(id, value);
-		}
-		urlConn(url, params);
-		while ((line = rd.readLine()) != null) {
-			log.info(line);
-		}
-		return null;
 	}
 
 	private void urlConn(URL url, Map<String, String> params)
@@ -399,8 +231,6 @@ public class XuiteUtil {
 				classes = new ArrayList<Class>(Arrays.asList(Util
 						.getClasses("ggxuite.shortener")));
 			}
-			// @SuppressWarnings("rawtypes")
-			// List<Class> classes = new ArrayList<Class>(c);
 
 			while (Util.isEmpty(shortUrl) && retry < 5) {
 				shortUrl = ((IShortener) classes.get(

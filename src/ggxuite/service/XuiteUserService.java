@@ -15,7 +15,7 @@ import java.util.List;
 public interface XuiteUserService extends AbstractService<XuiteUser, String> {
 	void saveXuiteFiles(XuiteUser user, List<XuiteFile> files);
 
-	List<XuiteUser> findByApiKey(String apiKey);
+	XuiteUser findByApiKey(String apiKey);
 
 	void saveOrUpdate(XuiteUser user);
 }
