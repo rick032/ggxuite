@@ -127,5 +127,11 @@ public abstract class AbstractServiceImpl<T extends Persistable, ID extends Seri
 		return em.find(type, KeyFactory.stringToKey(id));
 	}
 	
+	public T deleteAndInsert(T deleteEntity,T saveEntity){
+		if(deleteEntity !=null){
+			delete(deleteEntity);
+		}		
+		return save(saveEntity);
+	}
 	
 }

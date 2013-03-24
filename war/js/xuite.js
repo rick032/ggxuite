@@ -3,7 +3,7 @@ $(document).ready(function() {
 
 	$("#sendToOauth").click(function() {
 
-		if ($.trim(oAuth.val())) {
+		if ($.trim(oAuth.val()) && message.val().indexOf('Get oAuth') >0) {
 			return alert("The oAuth has value already.");
 		}
 		if (apiKey.val()) {

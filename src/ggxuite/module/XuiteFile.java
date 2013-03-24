@@ -6,8 +6,8 @@ package ggxuite.module;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 
 /**
@@ -23,7 +23,8 @@ public class XuiteFile extends BaseEntity {
 	private String name;
 	private BigInteger size;
 	private Timestamp mtime;
-	@ManyToOne(fetch = FetchType.EAGER)
+	
+	@ManyToOne (cascade=CascadeType.ALL)
 	private XuiteUser user;
 
 	public XuiteFile(String key, String parent, String path, String name,

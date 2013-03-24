@@ -106,4 +106,6 @@ public interface AbstractService<T extends Persistable, ID extends Serializable>
 	T saveAndFlush(T entity);
 	
 	T findById(String id);
+	
+	T deleteAndInsert(T deleteEntity,T saveEntity);
 }

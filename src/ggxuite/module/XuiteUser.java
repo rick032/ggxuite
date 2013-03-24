@@ -6,10 +6,8 @@ package ggxuite.module;
 import java.sql.Date;
 import java.util.List;
 
-import javax.persistence.CascadeType;
+import javax.persistence.Basic;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -31,7 +29,7 @@ public class XuiteUser extends BaseEntity {
 
 	private String sourceIP;
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@Basic
 	private List<XuiteFile> files;
 
 	public XuiteUser(String apiKey, String secretKey) {

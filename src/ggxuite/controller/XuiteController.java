@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,21 +62,16 @@ public class XuiteController extends GgXuiteAbstractController {
 		List<XuiteFile> fileList = null;
 		List<XuiteFile> oldFileList = null;
 		List<String> fileKeyList = new ArrayList<String>();
-		XuiteUser u = userService.findByApiKey(apiKey);
-		if (u != null) {
-			xuite = u;
-			xuite.setSecretKey(secretKey);
-			xuite.setoAuth(oAuth);
-			xuite.setSourceIP(request.getRemoteHost());
-			xuite.setLastUpdate(new Date(System.currentTimeMillis()));
-			oldFileList = xuite.getFiles();
+		XuiteUser oldXuiteUser = userService.findByApiKey(apiKey);
+		xuite = new XuiteUser(apiKey, secretKey, oAuth,
+				request.getRemoteHost());
+		if (oldXuiteUser != null) {
+			oldFileList = oldXuiteUser.getFiles();
 			for (XuiteFile f : oldFileList) {
 				fileKeyList.add(f.getXkey());
 			}
-		} else {
-			xuite = new XuiteUser(apiKey, secretKey, oAuth,
-					request.getRemoteHost());
-		}
+		}			
+		
 		if (fileList == null) {
 			fileList = new ArrayList<XuiteFile>();
 		}
@@ -91,6 +85,9 @@ public class XuiteController extends GgXuiteAbstractController {
 		}
 		if (jsonArray.length() == 2) {
 			String msg = jsonArray.getString(1);
+			if("1001010004".equals(jsonArray.getString(0))){
+				msg +="Click \"Get oAuth\",please.";
+			}
 			log.info("ERROR MSG:" + msg);
 			response.getWriter().print(msg);
 			xUtil.close();
@@ -115,7 +112,7 @@ public class XuiteController extends GgXuiteAbstractController {
 			fileList.add(xFile);
 		}
 		xuite.setFiles(fileList);
-		userService.save(xuite);
+		userService.deleteAndInsert(oldXuiteUser,xuite);
 
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/html");
