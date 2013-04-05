@@ -12,10 +12,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.MDC;
 
-public class Log4jFilter implements Filter {	
+public class Log4jFilter implements Filter {
 
-//	private final static String DEFAULT_EMPNO = "-----";
-//	private final static String EMPNO = "empNo";
+	// private final static String DEFAULT_EMPNO = "-----";
+	// private final static String EMPNO = "empNo";
 	private final static String IP = "IP";
 	private final static String URL = "URL";
 
@@ -29,18 +29,14 @@ public class Log4jFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response,
 			FilterChain chain) throws IOException, ServletException {
 		HttpServletRequest req = (HttpServletRequest) request;
-		/*		HttpSession session = req.getSession();
-
-		if (session == null) {
-			MDC.put(EMPNO, DEFAULT_EMPNO);
-		} else {
-			Object empNo = session.getAttribute(EMPNO);
-			if (empNo == null) {
-				MDC.put(EMPNO, DEFAULT_EMPNO);
-			} else {
-				MDC.put(EMPNO, (String) empNo);
-			}
-		}*/
+		/*
+		 * HttpSession session = req.getSession();
+		 * 
+		 * if (session == null) { MDC.put(EMPNO, DEFAULT_EMPNO); } else { Object
+		 * empNo = session.getAttribute(EMPNO); if (empNo == null) {
+		 * MDC.put(EMPNO, DEFAULT_EMPNO); } else { MDC.put(EMPNO, (String)
+		 * empNo); } }
+		 */
 		MDC.put(IP, request.getRemoteAddr());
 		MDC.put(URL, getURL(req));
 

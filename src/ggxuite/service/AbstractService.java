@@ -4,6 +4,7 @@ import ggxuite.module.Persistable;
 
 import java.io.Serializable;
 
+import com.google.appengine.api.datastore.Entity;
 
 // TODO: @NoRepositoryBean
 public interface AbstractService<T extends Persistable, ID extends Serializable>
@@ -104,8 +105,12 @@ public interface AbstractService<T extends Persistable, ID extends Serializable>
 	 * @return the saved entity
 	 */
 	T saveAndFlush(T entity);
-	
+
 	T findById(String id);
-	
-	T deleteAndInsert(T deleteEntity,T saveEntity);
+
+	T deleteAndInsert(T deleteEntity, T saveEntity);
+
+	void update(Entity entity);
+
+	void update(Iterable<Entity> entity);
 }

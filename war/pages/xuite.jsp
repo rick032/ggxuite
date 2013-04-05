@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 		
 		<meta http-equiv="content-language" content="zh-tw">
-		<title>Xuite To SMG By Rick032!</title>		
+		<title>Xuite To SMG By Rick032</title>		
 		<script src="../js/jquery-1.9.1.min.js"></script>	
 		<link rel="stylesheet" href="../css/xuite.css">
 		<script src="../js/xuite.js" ></script>
@@ -50,17 +50,19 @@
 									</td>
 								</tr>
 							</table>
-							<div class="msg" id="message" name="message">
-
+							<div class="msg" id="message" name="message" >
+							${msg}
 							</div>
 							<textarea name="content" id="content" rows="20" cols="100">
 			
 							</textarea>
 						</div>
-					</form>
+					</form>					
 					<address>
 						Author: Rick032 - <a href="mailto:rick032@msn.com?subject=Xuite to SMG">email to me</a>
-					</address></td>
+					</address>
+					<div><i>Version</i>:2013.04.03</div>
+					</td>
 				</tr>
 			</tbody>
 		</table>

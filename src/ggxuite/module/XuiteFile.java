@@ -4,11 +4,17 @@
 package ggxuite.module;
 
 import java.math.BigInteger;
-import java.sql.Timestamp;
+import java.util.Date;
 
-import javax.persistence.CascadeType;
+import javax.persistence.Basic;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import com.google.appengine.api.datastore.Key;
 
 /**
  * @author Rick
@@ -21,14 +27,18 @@ public class XuiteFile extends BaseEntity {
 	private String parent;
 	private String path;
 	private String name;
+	private String shortLink;
 	private BigInteger size;
-	private Timestamp mtime;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date mtime;
 	
-	@ManyToOne (cascade=CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.LAZY)	
+	@JoinColumn(name="ID")
 	private XuiteUser user;
 
-	public XuiteFile(String key, String parent, String path, String name,
-			BigInteger size, Timestamp mtime, XuiteUser user) {
+	public XuiteFile(Key id,String key, String parent, String path, String name,
+			BigInteger size, Date mtime, XuiteUser user) {
+		setId(id);
 		this.xkey = key;
 		this.parent = parent;
 		this.path = path;
@@ -36,6 +46,16 @@ public class XuiteFile extends BaseEntity {
 		this.size = size;
 		this.mtime = mtime;
 		this.user = user;
+	}
+
+	public XuiteFile(XuiteFile xuiteFile) {
+		this.xkey = xuiteFile.getXkey();
+		this.parent = xuiteFile.getParent();
+		this.path = xuiteFile.getPath();
+		this.name = xuiteFile.getName();
+		this.size = xuiteFile.getSize();
+		this.mtime = xuiteFile.getMtime();
+		this.user = xuiteFile.getUser();
 	}
 
 	public String getXkey() {
@@ -78,14 +98,7 @@ public class XuiteFile extends BaseEntity {
 		this.size = size;
 	}
 
-	public Timestamp getMtime() {
-		return mtime;
-	}
-
-	public void setMtime(Timestamp mtime) {
-		this.mtime = mtime;
-	}
-
+	@Basic
 	public XuiteUser getUser() {
 		return user;
 	}
@@ -94,4 +107,20 @@ public class XuiteFile extends BaseEntity {
 		this.user = user;
 	}
 
+	public Date getMtime() {
+		return mtime;
+	}
+
+	public void setMtime(Date mtime) {
+		this.mtime = mtime;
+	}
+
+	public String getShortLink() {
+		return shortLink;
+	}
+
+	public void setShortLink(String shortLink) {
+		this.shortLink = shortLink;
+	}
+	
 }

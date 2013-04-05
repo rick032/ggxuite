@@ -13,4 +13,6 @@ import ggxuite.module.XuiteFile;
  */
 public interface XuiteFileService extends AbstractService<XuiteFile, String> {
 	List<XuiteFile> findByxKey(String xKey);
+	
+	int updateShortLink(List<XuiteFile> files);
 }

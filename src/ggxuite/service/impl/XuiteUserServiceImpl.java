@@ -41,11 +41,17 @@ public class XuiteUserServiceImpl extends
 		}
 		xFileService.save(files);
 	}
-
-	public void saveOrUpdate(XuiteUser user) {
-		XuiteUser u = findByApiKey(user.getApiKey());
-		if (u != null) {
-			delete(u);
+	
+	public void saveOrUpdate(XuiteUser user, List<XuiteFile> oldFiles) {
+		if (oldFiles != null) {
+			xFileService.delete(oldFiles);
+		}
+		save(user);
+	}
+	
+	public void saveUserAndNewFiles(XuiteUser user, List<XuiteFile> newFiles) {
+		if(newFiles !=null){
+			xFileService.save(newFiles);
 		}
 		save(user);
 	}
@@ -55,7 +61,7 @@ public class XuiteUserServiceImpl extends
 			Query q = em
 					.createQuery("select user from XuiteUser user where user.apiKey=?1");
 			q.setParameter(1, apiKey);
-			return (XuiteUser) q.getSingleResult();
+		return (XuiteUser) q.getSingleResult();
 		} catch (NoResultException e) {
 			return null;
 		}

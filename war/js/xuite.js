@@ -3,11 +3,11 @@ $(document).ready(function() {
 
 	$("#sendToOauth").click(function() {
 
-		if ($.trim(oAuth.val()) && message.val().indexOf('Get oAuth') >0) {
+		if ($.trim(oAuth.val())) {
 			return alert("The oAuth has value already.");
 		}
 		if (apiKey.val()) {
-			form.attr("action", "http://my.xuite.net/service/account/authorize.php?response_type=token&client_id=" + apiKey.val() + "&redirect_uri=http://ggxuite.appspot.com/xuite/getoauth&scope=read write&state=&invoke_call=")
+			form.attr("action", "http://my.xuite.net/service/account/authorize.php?response_type=token&client_id=" + apiKey.val() + "&redirect_uri=http://"+window.location.host+"/xuite/getoauth&scope=read write&state=&invoke_call=")
 			form.submit();
 		} else {
 			alert("Please key in API-KEY");

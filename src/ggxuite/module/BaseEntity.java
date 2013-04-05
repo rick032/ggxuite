@@ -13,6 +13,7 @@ import com.google.appengine.api.datastore.Key;
 @Configurable
 @MappedSuperclass
 public abstract class BaseEntity implements Persistable {
+	
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Key id;

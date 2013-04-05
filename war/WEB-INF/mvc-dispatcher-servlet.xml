@@ -28,6 +28,8 @@ http://www.springframework.org/schema/aop http://www.springframework.org/schema/
 	lazy-init="true">
 		<property name="persistenceUnitName" value="transactions-optional" />
 	</bean>
+	<bean id="datastoreService" class="com.google.appengine.api.datastore.DatastoreServiceFactory" factory-method="getDatastoreService" />
+	
 	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
 		<property name="entityManagerFactory" ref="entityManagerFactory" />
 	</bean>

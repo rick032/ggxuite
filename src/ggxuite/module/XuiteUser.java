@@ -3,11 +3,13 @@
  */
 package ggxuite.module;
 
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -29,20 +31,19 @@ public class XuiteUser extends BaseEntity {
 
 	private String sourceIP;
 
-	@Basic
+	@OneToMany(mappedBy="user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
 	private List<XuiteFile> files;
 
 	public XuiteUser(String apiKey, String secretKey) {
 		this.apiKey = apiKey;
 		this.secretKey = secretKey;
-		this.lastUpdate = new Date(System.currentTimeMillis());
 	}
 
 	public XuiteUser(String apiKey, String secretKey, String oAuth) {
 		this.apiKey = apiKey;
 		this.secretKey = secretKey;
 		this.oAuth = oAuth;
-		this.lastUpdate = new Date(System.currentTimeMillis());
+		this.lastUpdate = new Date();
 	}
 
 	public XuiteUser(String apiKey, String secretKey, String oAuth,
@@ -51,7 +52,15 @@ public class XuiteUser extends BaseEntity {
 		this.secretKey = secretKey;
 		this.oAuth = oAuth;
 		this.sourceIP = remoteHost;
-		this.lastUpdate = new Date(System.currentTimeMillis());
+		this.lastUpdate = new Date();
+	}
+
+	public XuiteUser(XuiteUser oldXuiteUser) {
+		this.apiKey = oldXuiteUser.getApiKey();
+		this.secretKey = oldXuiteUser.getSecretKey();
+		this.oAuth = oldXuiteUser.getoAuth();
+		this.sourceIP = oldXuiteUser.getSourceIP();
+		this.lastUpdate = new Date();
 	}
 
 	public String getApiKey() {
@@ -101,6 +110,5 @@ public class XuiteUser extends BaseEntity {
 	public void setLastUpdate(Date lastUpdate) {
 		this.lastUpdate = lastUpdate;
 	}
-	
-	
+
 }
