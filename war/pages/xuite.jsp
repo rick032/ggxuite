@@ -26,6 +26,12 @@
 									<td colspan="2" style="font-weight: bold;">Please input these columns.</td>
 								</tr>
 								<tr>
+									<td style="font-weight: bold;"><label for="API-KEY">User ID:</label></td>
+									<td>
+									<input type="text" id="userId" name="userId" value=""/>
+									</td>
+								</tr>
+								<tr>
 									<td style="font-weight: bold;"><label for="API-KEY">API-KEY:</label></td>
 									<td>
 									<input type="text" id="apiKey" name="apiKey" value=""/><input type="button" id="getOldFileList" name="getOldFileList" value="Get old File List"/>

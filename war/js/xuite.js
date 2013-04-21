@@ -1,5 +1,5 @@
 $(document).ready(function() {
-	var apiKey = $("#apiKey"), secretKey = $("#secretKey"), oAuth = $("#oAuth"), form = $('#form1'), message = $("#message"),content = $("#content");
+	var apiKey = $("#apiKey"), secretKey = $("#secretKey"), oAuth = $("#oAuth"), form = $('#form1'), message = $("#message"),content = $("#content"),userId = $("#userId");
 
 	$("#sendToOauth").click(function() {
 
@@ -14,8 +14,7 @@ $(document).ready(function() {
 		}
 	})
 	$("#send").click(function() {
-		if (apiKey.val() && secretKey.val() && oAuth.val()) {
-
+		if (apiKey.val() && secretKey.val() && oAuth.val() && userId.val()) {
 			message.animate({
 				opacity : 0.25,
 				left : '50',
@@ -28,7 +27,8 @@ $(document).ready(function() {
 					data : {
 						apiKey : apiKey.val(),
 						secretKey : secretKey.val(),
-						oAuth : oAuth.val()
+						oAuth : oAuth.val(),
+						userId : userId.val()
 					},
 					success : function(msg) {
 						content.val(msg);
@@ -46,13 +46,18 @@ $(document).ready(function() {
 	})
 
 	$("#getOldFileList").click(function() {
+		if(!userId.val()){
+			alert("Please key in User ID");
+			return;
+		}
 		if (apiKey.val()) {
 			$(this).text("It's getting old File list.Please wait");
 			$.ajax({
 				type : "GET",
 				url : "../xuite/getoldfile",
 				data : {
-					apiKey : apiKey.val()
+					apiKey : apiKey.val(),
+					userId : userId.val()
 				},
 				success : function(rep) {
 					var rep = eval('(' + rep+ ')');

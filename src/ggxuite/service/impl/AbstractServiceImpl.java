@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.KeyFactory;
 
 @Transactional
@@ -98,7 +97,7 @@ public abstract class AbstractServiceImpl<T extends Persistable, ID extends Seri
 
 	@Override
 	public void delete(T entity) {
-		em.remove(em.merge(entity));
+		em.remove(entity);
 	}
 
 	@Override
@@ -138,12 +137,12 @@ public abstract class AbstractServiceImpl<T extends Persistable, ID extends Seri
 		return save(saveEntity);
 	}
 
-	public void update(Entity entity) {
-		datastoreService.put(entity);
+	public void update(T entity) {
+		em.merge(entity);
 	}
 
-	public void update(Iterable<Entity> entities) {
-		datastoreService.put(entities);
+	public void update(Iterable<T> entities) {
+		em.merge(entities);
 	}
 
 }

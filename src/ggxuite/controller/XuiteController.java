@@ -3,8 +3,10 @@
  */
 package ggxuite.controller;
 
+import ggxuite.module.LoginUser;
 import ggxuite.module.XuiteFile;
 import ggxuite.module.XuiteUser;
+import ggxuite.service.LoginUserService;
 import ggxuite.service.XuiteFileService;
 import ggxuite.service.XuiteUserService;
 import ggxuite.util.XuiteUtil;
@@ -53,93 +55,120 @@ public class XuiteController extends GgXuiteAbstractController {
 	XuiteUserService userService;
 	@Autowired
 	XuiteFileService fileService;
+	@Autowired
+	LoginUserService loginUserService;
 
 	@RequestMapping(value = "/add", method = RequestMethod.GET)
 	public void process(@RequestParam("apiKey") String apiKey,
 			@RequestParam("secretKey") String secretKey,
-			@RequestParam("oAuth") String oAuth, HttpServletRequest request,
+			@RequestParam("oAuth") String oAuth,
+			@RequestParam("userId") String userId, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-		XuiteUser xuite = null;
-		List<XuiteFile> fileList = new ArrayList<XuiteFile>();
-		XuiteUser oldXuiteUser = userService.findByApiKey(apiKey);
-		Map<String, XuiteFile> oldFileMap = null;
-		List<XuiteFile> oldFileList = null;
-		if (oldXuiteUser != null) {
-			oldFileMap = new LinkedHashMap<String, XuiteFile>();
-			oldFileList = oldXuiteUser.getFiles();
-			for (XuiteFile f : oldFileList) {
-				oldFileMap.put(f.getXkey(), f);
-			}
-			oldXuiteUser.setoAuth(oAuth);
-			oldXuiteUser.setSourceIP(request.getRemoteHost());
-			oldXuiteUser.setLastUpdate(new Date(System.currentTimeMillis()));
-			xuite = oldXuiteUser;
-		} else {
-			xuite = new XuiteUser(apiKey, secretKey, oAuth,
-					request.getRemoteHost());
-		}
-		log.info("IP:" + xuite.getSourceIP());
-		XuiteUtil xUtil = new XuiteUtil(xuite);
-
-		JSONArray jsonArray = xUtil.getList();
-		if (jsonArray.length() == 2 && "1001010003".equals(jsonArray.get(0))) {
-			log.info("1001010003:" + jsonArray.getString(1));
-			jsonArray = xUtil.getList();
-		}
-		if (jsonArray.length() == 2) {
-			String msg = jsonArray.getString(1);
-			if ("1001010004".equals(jsonArray.getString(0))) {
-				msg += "Click \"Get oAuth\",please.";
-			}
-			log.info("ERROR MSG:" + msg);
-			response.getWriter().print(msg);
-			xUtil.close();
-			return;
-		}
-		List<XuiteFile> newFileList = new ArrayList<XuiteFile>();
-		for (int i = 0; i < jsonArray.length(); i++) {
-			JSONObject j = jsonArray.getJSONObject(i);
-			XuiteFile xFile = null;
-			String xKey = j.getString("key");
-			if (oldFileMap != null && oldFileMap.containsKey(xKey)) {
-				// file exist
-				xFile = oldFileMap.get(xKey);
-				xFile.setParent(j.getString("parent"));
-				xFile.setPath(j.getString("path"));
-				xFile.setName(j.getString("name"));
-				xFile.setSize(new BigInteger(j.getString("size")));
-				xFile.setMtime(new Date(j.getLong("mtime")));
-				log.info("file exist:" + xKey);
+		if (validateUserId(userId, response)) {
+			XuiteUser xuite = null;
+			List<XuiteFile> fileList = new ArrayList<XuiteFile>();
+			XuiteUser oldXuiteUser = userService.findByApiKey(apiKey);
+			Map<String, XuiteFile> oldFileMap = null;
+			List<XuiteFile> oldFileList = null;
+			if (oldXuiteUser != null) {
+				oldFileMap = new LinkedHashMap<String, XuiteFile>();
+				oldFileList = oldXuiteUser.getFiles();
+				for (XuiteFile f : oldFileList) {
+					oldFileMap.put(f.getXkey(), f);
+				}
+				oldXuiteUser.setoAuth(oAuth);
+				oldXuiteUser.setSourceIP(request.getRemoteHost());
+				oldXuiteUser
+						.setLastUpdate(new Date(System.currentTimeMillis()));
+				xuite = oldXuiteUser;
 			} else {
-				// new
-				Key id = KeyFactory.createKey(XuiteFile.class.getSimpleName(),
-						xKey);
-
-				xFile = new XuiteFile(id, xKey, j.getString("parent"),
-						j.getString("path"), j.getString("name"),
-						new BigInteger(j.getString("size")), new Date(
-								j.getLong("mtime")), xuite);
-				newFileList.add(xFile);
+				xuite = new XuiteUser(apiKey, secretKey, oAuth,
+						request.getRemoteHost());
 			}
-			log.info("file new:" + xKey);
+			log.info("IP:" + xuite.getSourceIP());
+			XuiteUtil xUtil = new XuiteUtil(xuite);
 
-			fileList.add(xFile);
-		}
-		xuite.setFiles(fileList);
-		String url = request.getRequestURL().toString();
-		String urls = processIdUrl(xUtil,
-				url.substring(0, url.lastIndexOf("/")), fileList);
-		log.info(urls);
-		if (oldFileMap == null) {
-			userService.save(xuite);
-		} else {
-			userService.saveUserAndNewFiles(xuite, newFileList);
-		}
-		response.setCharacterEncoding("UTF-8");
-		response.setContentType("text/html");
+			JSONArray jsonArray = xUtil.getList();
+			if (jsonArray.length() == 2
+					&& "1001010003".equals(jsonArray.get(0))) {
+				log.info("1001010003:" + jsonArray.getString(1));
+				jsonArray = xUtil.getList();
+			}
+			if (jsonArray.length() == 2) {
+				String msg = jsonArray.getString(1);
+				if ("1001010004".equals(jsonArray.getString(0))) {
+					msg += "Click \"Get oAuth\",please.";
+				}
+				log.info("ERROR MSG:" + msg);
+				response.getWriter().print(msg);
+				xUtil.close();
+				return;
+			}
+			List<XuiteFile> newFileList = new ArrayList<XuiteFile>();
+			for (int i = 0; i < jsonArray.length(); i++) {
+				JSONObject j = jsonArray.getJSONObject(i);
+				XuiteFile xFile = null;
+				String xKey = j.getString("key");
+				if (oldFileMap != null && oldFileMap.containsKey(xKey)) {
+					// file exist
+					xFile = oldFileMap.get(xKey);
+					xFile.setParent(j.getString("parent"));
+					xFile.setPath(j.getString("path"));
+					xFile.setName(j.getString("name"));
+					xFile.setSize(new BigInteger(j.getString("size")));
+					xFile.setMtime(new Date(j.getLong("mtime")));
+					// remove from old file list
+					oldFileList.remove(xFile);
+					log.info("file exist:" + xKey);
+				} else {
+					// new
+					Key id = KeyFactory.createKey(
+							XuiteFile.class.getSimpleName(), xKey);
 
-		response.getWriter().print(urls);
-		xUtil.close();
+					xFile = new XuiteFile(id, xKey, j.getString("parent"),
+							j.getString("path"), j.getString("name"),
+							new BigInteger(j.getString("size")), new Date(
+									j.getLong("mtime")), xuite);
+					newFileList.add(xFile);
+				}
+				log.info("file new:" + xKey);
+
+				fileList.add(xFile);
+			}
+			xuite.setFiles(fileList);
+			String url = request.getRequestURL().toString();
+			String urls = processIdUrl(xUtil,
+					url.substring(0, url.lastIndexOf("/")), fileList);
+			log.info(urls);
+			if (oldFileMap == null) {
+				userService.save(xuite);
+			} else {
+				userService.saveUserAndNewFiles(xuite, newFileList);
+				if (oldFileList != null && !oldFileList.isEmpty()) {
+					// 移除不存在的舊檔
+					fileService.delete(oldFileList);
+				}
+			}
+			response.setCharacterEncoding("UTF-8");
+			response.setContentType("text/html");
+
+			response.getWriter().print(urls);
+			xUtil.close();
+		}
+	}
+
+	@SuppressWarnings("static-access")
+	private boolean validateUserId(String userId, HttpServletResponse response)
+			throws IOException {
+		LoginUser loginUser = loginUserService.findByUserId(userId);
+		if (loginUser == null) {
+			response.sendError(response.SC_EXPECTATION_FAILED,
+					"Your User Id can't be found!");
+			return false;
+		}
+		loginUser.setUpdateTime(new Date(System.currentTimeMillis()));
+		loginUserService.save(loginUser);
+		return true;
 	}
 
 	@RequestMapping
@@ -164,27 +193,28 @@ public class XuiteController extends GgXuiteAbstractController {
 
 	@RequestMapping(value = "/getoldfile", method = RequestMethod.GET)
 	public void getOldFile(@RequestParam("apiKey") String apiKey,
-			HttpServletRequest request, HttpServletResponse response)
-			throws IOException, JSONException {
-		XuiteUser oldUser = userService.findByApiKey(apiKey);
-		JSONObject json = new JSONObject();
-		if (oldUser != null) {
-			json.put("secretKey", oldUser.getSecretKey());
-			json.put("oAuth", oldUser.getoAuth());
-			StringBuffer sb = new StringBuffer();
-			for (XuiteFile file : oldUser.getFiles()) {
-				sb.append(file.getShortLink()).append("|")
-						.append(file.getName())
-						.append(System.getProperty("line.separator"));
+			@RequestParam("userId") String userId, HttpServletRequest request,
+			HttpServletResponse response) throws IOException, JSONException {
+		if (validateUserId(userId, response)) {
+			XuiteUser oldUser = userService.findByApiKey(apiKey);
+			JSONObject json = new JSONObject();
+			if (oldUser != null) {
+				json.put("secretKey", oldUser.getSecretKey());
+				json.put("oAuth", oldUser.getoAuth());
+				StringBuffer sb = new StringBuffer();
+				for (XuiteFile file : oldUser.getFiles()) {
+					sb.append(file.getShortLink()).append("|")
+							.append(file.getName())
+							.append(System.getProperty("line.separator"));
+				}
+				json.put("content", sb.toString());
+			} else {
+				json.put("msg", "This API-Key not found!");
 			}
-			json.put("content", sb.toString());
-		} else {
-			json.put("msg", "This API-Key not found!");
+			response.setCharacterEncoding("UTF-8");
+			response.setContentType("text/html");
+			response.getWriter().print(json.toString());
 		}
-		response.setCharacterEncoding("UTF-8");
-		response.setContentType("text/html");
-		response.getWriter().print(json.toString());
-
 	}
 
 	protected String processIdUrl(XuiteUtil xUtil, String url,
@@ -201,7 +231,7 @@ public class XuiteController extends GgXuiteAbstractController {
 				// .append(KeyFactory.keyToString(f.getId())).toString();
 				String u = new StringBuffer(url).append("/geturl/")
 						.append(f.getXkey()).toString();
-				shortener = xUtil.getShortener(u);
+				shortener = u;// xUtil.getShortener(u);
 				f.setShortLink(shortener);
 			}
 			sb.append(shortener).append("|").append(f.getName())
@@ -223,9 +253,13 @@ public class XuiteController extends GgXuiteAbstractController {
 			}
 			XuiteFile file = files.get(0);
 			XuiteUtil xUtil = new XuiteUtil(file.getUser());
-
-			response.sendRedirect(xUtil.getDirectURL(file.getXkey(),
-					file.getParent()));
+			String redirectUrl = xUtil.getDirectURL(file.getXkey(),
+					file.getParent());
+			if (redirectUrl.startsWith("https://api.xuite.net")) {
+				response.sendRedirect(redirectUrl);
+			} else {
+				response.sendError(response.SC_EXPECTATION_FAILED, redirectUrl);				
+			}
 			xUtil.close();
 		} catch (ClientProtocolException e) {
 			log.throwing(getClass().toString(), "getUrl", e.fillInStackTrace());
@@ -239,6 +273,26 @@ public class XuiteController extends GgXuiteAbstractController {
 		} catch (JSONException e) {
 			log.throwing(getClass().toString(), "getUrl", e.fillInStackTrace());
 			e.printStackTrace();
+		}
+	}
+
+	@SuppressWarnings("static-access")
+	@RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
+	public void createUser(@PathVariable String userId,
+			HttpServletRequest request, HttpServletResponse response)
+			throws IOException, JSONException {
+		LoginUser loginUser = loginUserService.findByUserId(userId);
+		if (loginUser == null) {
+			Date now = new Date(System.currentTimeMillis());
+			loginUser = new LoginUser();
+			loginUser.setUserId(userId);
+			loginUser.setCreateTime(now);
+			loginUser.setUpdateTime(now);
+			loginUserService.save(loginUser);
+			response.setStatus(response.SC_OK);
+		} else {
+			response.sendError(response.SC_EXPECTATION_FAILED, userId
+					+ " has already existed!! Please choose anther one.");
 		}
 	}
 

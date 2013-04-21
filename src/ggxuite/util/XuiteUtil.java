@@ -104,8 +104,9 @@ public class XuiteUtil {
 			sb.append(line);
 		}
 		JSONObject json = new JSONObject(sb.toString());
+		log.info("Xuite API Respance:" + json.toString());
 		return json.getBoolean("ok") ? json.getJSONObject("rsp").getString(
-				"url2") : "Fail!!";
+				"url2") : json.getJSONArray("msg").toString();
 	}
 
 	private void urlConn(URL url, Map<String, String> params)
