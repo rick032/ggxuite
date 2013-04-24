@@ -67,7 +67,7 @@
 					<address>
 						Author: Rick032 - <a href="mailto:rick032@msn.com?subject=Xuite to SMG">email to me</a>
 					</address>
-					<div><i>Version</i>:2013.04.03</div>
+					<div><i>Version</i>:2013.04.22</div>
 					</td>
 				</tr>
 			</tbody>

@@ -6,6 +6,8 @@ package ggxuite.service.impl;
 import ggxuite.module.LoginUser;
 import ggxuite.service.LoginUserService;
 
+import java.util.Date;
+
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
@@ -23,6 +25,19 @@ public class LoginUserServiceImpl extends
 
 	public LoginUserServiceImpl(EntityManager em) {
 		super(LoginUser.class, em);
+	}
+
+	public void init() {
+		String userId = "admin";
+		LoginUser loginUser = findByUserId(userId);
+		if (loginUser == null) {
+			Date now = new Date(System.currentTimeMillis());
+			loginUser = new LoginUser();
+			loginUser.setUserId(userId);
+			loginUser.setCreateTime(now);
+			loginUser.setUpdateTime(now);
+			save(loginUser);
+		}
 	}
 
 	@Override

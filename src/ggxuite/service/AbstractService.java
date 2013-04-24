@@ -108,7 +108,7 @@ public interface AbstractService<T extends Persistable, ID extends Serializable>
 
 	T deleteAndInsert(T deleteEntity, T saveEntity);
 
-	void update(T entity);
+	T update(T entity);
 
 	void update(Iterable<T> entity);
 }

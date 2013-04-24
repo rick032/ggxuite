@@ -143,11 +143,11 @@ public class XuiteController extends GgXuiteAbstractController {
 			if (oldFileMap == null) {
 				userService.save(xuite);
 			} else {
-				userService.saveUserAndNewFiles(xuite, newFileList);
 				if (oldFileList != null && !oldFileList.isEmpty()) {
 					// 移除不存在的舊檔
 					fileService.delete(oldFileList);
 				}
+				userService.saveUserAndNewFiles(xuite, newFileList);				
 			}
 			response.setCharacterEncoding("UTF-8");
 			response.setContentType("text/html");
@@ -231,7 +231,7 @@ public class XuiteController extends GgXuiteAbstractController {
 				// .append(KeyFactory.keyToString(f.getId())).toString();
 				String u = new StringBuffer(url).append("/geturl/")
 						.append(f.getXkey()).toString();
-				shortener = u;// xUtil.getShortener(u);
+				shortener = xUtil.getShortener(u);
 				f.setShortLink(shortener);
 			}
 			sb.append(shortener).append("|").append(f.getName())
@@ -255,7 +255,7 @@ public class XuiteController extends GgXuiteAbstractController {
 			XuiteUtil xUtil = new XuiteUtil(file.getUser());
 			String redirectUrl = xUtil.getDirectURL(file.getXkey(),
 					file.getParent());
-			if (redirectUrl.startsWith("https://api.xuite.net")) {
+			if (redirectUrl.startsWith("http://")) {
 				response.sendRedirect(redirectUrl);
 			} else {
 				response.sendError(response.SC_EXPECTATION_FAILED, redirectUrl);				

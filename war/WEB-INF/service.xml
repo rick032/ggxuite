@@ -7,6 +7,6 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 
 <bean id="XuiteFileService" class="ggxuite.service.impl.XuiteFileServiceImpl"/>
 
-<bean id="LoginUserService" class="ggxuite.service.impl.LoginUserServiceImpl"/>
+<bean id="LoginUserService" class="ggxuite.service.impl.LoginUserServiceImpl" init-method="init"/>
 
 </beans>

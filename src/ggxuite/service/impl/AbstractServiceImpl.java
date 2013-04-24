@@ -103,7 +103,7 @@ public abstract class AbstractServiceImpl<T extends Persistable, ID extends Seri
 	@Override
 	public void delete(Iterable<? extends T> entities) {
 		for (T t : entities) {
-			delete(t);
+			delete(update(t));
 		}
 	}
 
@@ -137,8 +137,8 @@ public abstract class AbstractServiceImpl<T extends Persistable, ID extends Seri
 		return save(saveEntity);
 	}
 
-	public void update(T entity) {
-		em.merge(entity);
+	public T update(T entity) {
+		return em.merge(entity);
 	}
 
 	public void update(Iterable<T> entities) {
