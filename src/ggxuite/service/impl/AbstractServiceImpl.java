@@ -5,6 +5,7 @@ import ggxuite.service.AbstractService;
 
 import java.io.Serializable;
 
+import javax.jdo.annotations.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
@@ -12,13 +13,13 @@ import javax.persistence.PersistenceUnitUtil;
 import javax.persistence.Query;
 
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
-@Transactional
+
 @Configurable
 public abstract class AbstractServiceImpl<T extends Persistable, ID extends Serializable>
 		implements AbstractService<T, ID> {
@@ -49,6 +50,7 @@ public abstract class AbstractServiceImpl<T extends Persistable, ID extends Seri
 	}
 
 	@Override
+	@Transactional
 	public <S extends T> S save(S entity) {
 		if (em.getEntityManagerFactory().getPersistenceUnitUtil()
 				.getIdentifier(entity) == null) {
@@ -59,6 +61,7 @@ public abstract class AbstractServiceImpl<T extends Persistable, ID extends Seri
 	}
 
 	@Override
+	@Transactional
 	public <S extends T> Iterable<S> save(Iterable<S> entities) {
 		for (S entity : entities) {
 			save(entity);
@@ -88,6 +91,7 @@ public abstract class AbstractServiceImpl<T extends Persistable, ID extends Seri
 	}
 
 	@Override
+	@Transactional
 	public void delete(ID id) {
 		Query q = em.createQuery(
 				String.format("delete from %s x where x.id = %s",
@@ -96,18 +100,21 @@ public abstract class AbstractServiceImpl<T extends Persistable, ID extends Seri
 	}
 
 	@Override
+	@Transactional
 	public void delete(T entity) {
 		em.remove(entity);
 	}
-
+	
 	@Override
+	@Transactional
 	public void delete(Iterable<? extends T> entities) {
 		for (T t : entities) {
-			delete(update(t));
+			delete(t);
 		}
 	}
 
 	@Override
+	@Transactional
 	public void deleteAll() {
 		Query q = em.createQuery(
 				String.format("delete from %s x", type.getName()), type);
@@ -120,6 +127,7 @@ public abstract class AbstractServiceImpl<T extends Persistable, ID extends Seri
 	}
 
 	@Override
+	@Transactional
 	public T saveAndFlush(T entity) {
 		em.persist(entity);
 		em.flush();
@@ -129,7 +137,12 @@ public abstract class AbstractServiceImpl<T extends Persistable, ID extends Seri
 	public T findById(String id) {
 		return em.find(type, KeyFactory.stringToKey(id));
 	}
+	
+	public T findById(Key id) {
+		return em.find(type, id);
+	}
 
+	@Transactional
 	public T deleteAndInsert(T deleteEntity, T saveEntity) {
 		if (deleteEntity != null) {
 			delete(deleteEntity);
@@ -137,10 +150,12 @@ public abstract class AbstractServiceImpl<T extends Persistable, ID extends Seri
 		return save(saveEntity);
 	}
 
+	@Transactional
 	public T update(T entity) {
 		return em.merge(entity);
 	}
 
+	@Transactional
 	public void update(Iterable<T> entities) {
 		em.merge(entities);
 	}

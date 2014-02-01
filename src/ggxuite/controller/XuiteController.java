@@ -17,7 +17,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -68,14 +67,9 @@ public class XuiteController extends GgXuiteAbstractController {
 			XuiteUser xuite = null;
 			List<XuiteFile> fileList = new ArrayList<XuiteFile>();
 			XuiteUser oldXuiteUser = userService.findByApiKey(apiKey);
-			Map<String, XuiteFile> oldFileMap = null;
-			List<XuiteFile> oldFileList = null;
+
 			if (oldXuiteUser != null) {
-				oldFileMap = new LinkedHashMap<String, XuiteFile>();
-				oldFileList = oldXuiteUser.getFiles();
-				for (XuiteFile f : oldFileList) {
-					oldFileMap.put(f.getXkey(), f);
-				}
+				fileService.deleteByXUser(oldXuiteUser);
 				oldXuiteUser.setoAuth(oAuth);
 				oldXuiteUser.setSourceIP(request.getRemoteHost());
 				oldXuiteUser
@@ -109,28 +103,17 @@ public class XuiteController extends GgXuiteAbstractController {
 				JSONObject j = jsonArray.getJSONObject(i);
 				XuiteFile xFile = null;
 				String xKey = j.getString("key");
-				if (oldFileMap != null && oldFileMap.containsKey(xKey)) {
-					// file exist
-					xFile = oldFileMap.get(xKey);
-					xFile.setParent(j.getString("parent"));
-					xFile.setPath(j.getString("path"));
-					xFile.setName(j.getString("name"));
-					xFile.setSize(new BigInteger(j.getString("size")));
-					xFile.setMtime(new Date(j.getLong("mtime")));
-					// remove from old file list
-					oldFileList.remove(xFile);
-					log.info("file exist:" + xKey);
-				} else {
-					// new
-					Key id = KeyFactory.createKey(
-							XuiteFile.class.getSimpleName(), xKey);
 
-					xFile = new XuiteFile(id, xKey, j.getString("parent"),
-							j.getString("path"), j.getString("name"),
-							new BigInteger(j.getString("size")), new Date(
-									j.getLong("mtime")), xuite);
-					newFileList.add(xFile);
-				}
+				// new
+				Key id = KeyFactory.createKey(XuiteFile.class.getSimpleName(),
+						xKey);
+
+				xFile = new XuiteFile(id, xKey, j.getString("parent"),
+						j.getString("path"), j.getString("name"),
+						new BigInteger(j.getString("size")), new Date(
+								j.getLong("mtime")), xuite);
+				newFileList.add(xFile);
+
 				log.info("file new:" + xKey);
 
 				fileList.add(xFile);
@@ -140,14 +123,10 @@ public class XuiteController extends GgXuiteAbstractController {
 			String urls = processIdUrl(xUtil,
 					url.substring(0, url.lastIndexOf("/")), fileList);
 			log.info(urls);
-			if (oldFileMap == null) {
+			if (oldXuiteUser == null) {
 				userService.save(xuite);
 			} else {
-				if (oldFileList != null && !oldFileList.isEmpty()) {
-					// 移除不存在的舊檔
-					fileService.delete(oldFileList);
-				}
-				userService.saveUserAndNewFiles(xuite, newFileList);				
+				userService.saveUserAndNewFiles(xuite, newFileList);
 			}
 			response.setCharacterEncoding("UTF-8");
 			response.setContentType("text/html");
@@ -252,13 +231,14 @@ public class XuiteController extends GgXuiteAbstractController {
 				return;
 			}
 			XuiteFile file = files.get(0);
-			XuiteUtil xUtil = new XuiteUtil(file.getUser());
+			XuiteUtil xUtil = new XuiteUtil(userService.findById(file.getUser()
+					.getId()));
 			String redirectUrl = xUtil.getDirectURL(file.getXkey(),
 					file.getParent());
 			if (redirectUrl.startsWith("http://")) {
 				response.sendRedirect(redirectUrl);
 			} else {
-				response.sendError(response.SC_EXPECTATION_FAILED, redirectUrl);				
+				response.sendError(response.SC_EXPECTATION_FAILED, redirectUrl);
 			}
 			xUtil.close();
 		} catch (ClientProtocolException e) {

@@ -4,6 +4,8 @@ import ggxuite.module.Persistable;
 
 import java.io.Serializable;
 
+import com.google.appengine.api.datastore.Key;
+
 // TODO: @NoRepositoryBean
 public interface AbstractService<T extends Persistable, ID extends Serializable>
 // TODO:extends JpaRepository<T, ID>, QueryDslPredicateExecutor<T>,
@@ -105,6 +107,8 @@ public interface AbstractService<T extends Persistable, ID extends Serializable>
 	T saveAndFlush(T entity);
 
 	T findById(String id);
+	
+	T findById(Key id);
 
 	T deleteAndInsert(T deleteEntity, T saveEntity);
 

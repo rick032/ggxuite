@@ -4,6 +4,7 @@
 package ggxuite.service.impl;
 
 import ggxuite.module.XuiteFile;
+import ggxuite.module.XuiteUser;
 import ggxuite.service.XuiteFileService;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class XuiteFileServiceImpl extends
 
 	@Override
 	public int updateShortLink(List<XuiteFile> files) {
-		
+
 		int count = 0;
 		for (XuiteFile file : files) {
 			Query q = em
@@ -47,6 +48,22 @@ public class XuiteFileServiceImpl extends
 			count += q.executeUpdate();
 		}
 		return count;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<XuiteFile> findByxUser(XuiteUser xUser) {
+		Query q = em
+				.createQuery("select file from XuiteFile file where file.user=?1");
+		q.setParameter(1, xUser);
+		return q.getResultList();
+	}
+
+	@Override
+	public int deleteByXUser(XuiteUser xUser) {
+		Query q = em.createQuery("delete from XuiteFile x where x.user=?1");
+		q.setParameter(1, xUser);		
+		return q.executeUpdate(); 
 	}
 
 }
