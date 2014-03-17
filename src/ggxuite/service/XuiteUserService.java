@@ -17,7 +17,7 @@ public interface XuiteUserService extends AbstractService<XuiteUser, String> {
 
 	XuiteUser findByApiKey(String apiKey);
 
-	void saveOrUpdate(XuiteUser user, List<XuiteFile> oldfiles);
+	void saveAndDelete(XuiteUser user);
 
 	void saveUserAndNewFiles(XuiteUser user, List<XuiteFile> newFiles);
 }

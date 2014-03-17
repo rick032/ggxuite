@@ -69,7 +69,7 @@ public class XuiteController extends GgXuiteAbstractController {
 			XuiteUser oldXuiteUser = userService.findByApiKey(apiKey);
 
 			if (oldXuiteUser != null) {
-				fileService.deleteByXUser(oldXuiteUser);
+				//fileService.deleteByXUser(oldXuiteUser);
 				oldXuiteUser.setoAuth(oAuth);
 				oldXuiteUser.setSourceIP(request.getRemoteHost());
 				oldXuiteUser
@@ -98,12 +98,19 @@ public class XuiteController extends GgXuiteAbstractController {
 				xUtil.close();
 				return;
 			}
-			List<XuiteFile> newFileList = new ArrayList<XuiteFile>();
+			List<XuiteFile> oidFileList = oldXuiteUser.getFiles();
+			List<String> xKeyList = new ArrayList<String>();
+			for (XuiteFile xFile : oidFileList) {
+				xKeyList.add(xFile.getXkey());
+			}
 			for (int i = 0; i < jsonArray.length(); i++) {
 				JSONObject j = jsonArray.getJSONObject(i);
 				XuiteFile xFile = null;
 				String xKey = j.getString("key");
-
+				if (xKeyList.contains(xKey)) {
+					fileList.add(oidFileList.get(xKeyList.indexOf(xKey)));
+					continue;
+				}
 				// new
 				Key id = KeyFactory.createKey(XuiteFile.class.getSimpleName(),
 						xKey);
@@ -112,7 +119,6 @@ public class XuiteController extends GgXuiteAbstractController {
 						j.getString("path"), j.getString("name"),
 						new BigInteger(j.getString("size")), new Date(
 								j.getLong("mtime")), xuite);
-				newFileList.add(xFile);
 
 				log.info("file new:" + xKey);
 
@@ -123,11 +129,11 @@ public class XuiteController extends GgXuiteAbstractController {
 			String urls = processIdUrl(xUtil,
 					url.substring(0, url.lastIndexOf("/")), fileList);
 			log.info(urls);
-			if (oldXuiteUser == null) {
-				userService.save(xuite);
-			} else {
-				userService.saveUserAndNewFiles(xuite, newFileList);
-			}
+			// if (oldXuiteUser == null) {			
+			userService.saveAndDelete(xuite);
+			// } else {
+			// userService.saveUserAndNewFiles(xuite, newFileList);
+			// }
 			response.setCharacterEncoding("UTF-8");
 			response.setContentType("text/html");
 

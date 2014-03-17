@@ -42,10 +42,8 @@ public class XuiteUserServiceImpl extends
 		xFileService.save(files);
 	}
 
-	public void saveOrUpdate(XuiteUser user, List<XuiteFile> oldFiles) {
-		if (oldFiles != null) {
-			xFileService.delete(oldFiles);
-		}
+	public void saveAndDelete(XuiteUser user) {		
+		xFileService.deleteByXUser(user);		
 		save(user);
 	}
 

@@ -28,6 +28,13 @@ RCS
 RCSLOG
 SCCS
 _$*
-.settings\*
+.settings/
 *.prefs
 
+/bin
+/.classpath
+/.gitignore
+/.project
+.classpath
+.project
+war/
